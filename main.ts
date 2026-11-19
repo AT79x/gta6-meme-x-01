@@ -21,3 +21,17 @@ try {
   console.error(`could not copy POST.json out of ${BOT_DIR}: ${(err as Error).message}`);
   process.exit(1);
 }
+
+// The house refuses an entry whose POST.json does not read, so check here
+// that what was copied is a JSON object with a string url, and fail loudly
+// instead of handing over a broken address.
+import { readFileSync } from 'node:fs';
+try {
+  const post = JSON.parse(readFileSync(join(OUTPUT_DIR, 'POST.json'), 'utf-8'));
+  if (typeof post !== 'object' || post === null || typeof post.url !== 'string' || !post.url) {
+    throw new Error('POST.json has no string url');
+  }
+} catch (err) {
+  console.error(`POST.json does not read: ${(err as Error).message}`);
+  process.exit(1);
+}
